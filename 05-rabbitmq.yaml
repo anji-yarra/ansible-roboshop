@@ -12,7 +12,7 @@
       name: rabbitmq-server
       state: present
 
-  - name: starting rabbitmq SW|
+  - name: starting rabbitmq SW
     serivice:
       name: rabbitmq-server
       state: started
