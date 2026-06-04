@@ -13,7 +13,7 @@
       state: present
 
   - name: starting rabbitmq SW
-    serivice:
+    service:
       name: rabbitmq-server
       state: started
       enable: yes
