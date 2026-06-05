@@ -59,7 +59,7 @@
       deamon_reload: true
 
   - name: Enable and restart cart
-    serice:
+    service:
       name: cart
       state: restarted
       enabled: yes
