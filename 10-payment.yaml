@@ -1,61 +1,44 @@
-
-- name: configure payment server
-  hosts: payment
+- name: configure frontend server
+  hosts: frontend
   become: yes
   tasks:
-  - name: install python
+  - name: enable nginx 1.24
+    command: dnf module enable nginx:1.24 -y
+  - name: install nginx
     package:
-      name: "{{ item }}"
+      name: nginx
       state: present
-    loop:
-    - python3 
-    - gcc 
-    - python3-devel
-  - name: create roboshop system user
-    user:
-      name: roboshop
-      system: true
-      home: /app
-      shell: /sbin/nologin
-      comment: "Roboshop System user"
-  - name: remove app directory
+  - name: remove html directory
     file:
-      path: /app
+      path: /usr/share/nginx/html/
       state: absent
-  - name: delete payment.zip in tmp directory
+  - name: delete frontend.zip in tmp directory
     file:
-      path: /tmp/payment.zip
+      path: /tmp/frontend.zip
       state: absent
-  - name: create app directory
+  - name: create html directory
     file:
-      path: /app
+      path: /usr/share/nginx/html/
       state: directory
-  - name: download payment
+  - name: download frontend
     get_url:
-      url: https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip 
-      dest: /tmp/payment.zip
-  - name: unzip payment
+      url: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip 
+      dest: /tmp/frontend.zip
+  - name: unzip frontend
     unarchive:
-      src: /tmp/payment.zip
-      dest: /app
+      src: /tmp/frontend.zip
+      dest: /usr/share/nginx/html/
       remote_src: yes
-  - name: install dependencies
-    pip: 
-      requirements: requirements.txt
-      executable: pip3.9
-    args:
-      chdir: /app
-  - name: copy payment service
+  - name: remove nginx default conf
+    file:
+      path: /etc/nginx/nginx.conf
+      state: absent
+  - name: copy nginx conf
     template:
-      src: payment.service.j2
-      dest: /etc/systemd/system/payment.service
-  - name: deamon reload
-    systemd_service:
-      name: payment
-      daemon_reload: true
-  - name: enable and restart payment
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+  - name: restart and enable frontend
     service:
-      name: payment
+      name: nginx
       state: restarted
       enabled: yes
-  
